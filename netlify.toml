@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# Netlify configuration — Yavatmal Unified Panchayat Operations Platform
+#
+# Nothing else has to be configured in the Netlify UI: import the repository
+# and deploy. The Next.js Runtime is installed automatically from the plugin
+# declaration below, so the app's routing, static pages and PWA assets work
+# exactly as they do locally.
+# ---------------------------------------------------------------------------
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Netlify sets NODE_ENV=production, which would skip devDependencies that the
+  # build needs (typescript, tailwindcss, postcss, eslint-config-next).
+  NPM_FLAGS = "--include=dev"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Official Next.js runtime — Netlify installs it during the build.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# ---------------------------------------------------------------------------
+# Headers
+# ---------------------------------------------------------------------------
+
+# The service worker must never be served from a stale edge cache, otherwise a
+# redeploy can leave visitors on the previous app shell.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "application/manifest+json"
+
+# Hashed build assets are immutable.
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
